@@ -6,8 +6,8 @@ import logging
 import signal
 import sys
 
-TOKEN = '6335691511:AAFbvY9wj0pck6vZKKYy_LpkKoSAxmbrpF0'
-OWM_KEY = 'bd5b3480cf228022801bad6280ae2c69'
+TOKEN = ''
+OWM_KEY = ''
 POLLING_TIMEOUT = None
 
 
