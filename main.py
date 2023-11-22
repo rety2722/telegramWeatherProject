@@ -65,12 +65,15 @@ def process_message(bot, owm, cities, update, state):
 
     weather_mgr = owm.weather_manager()
 
+    # create keyboard to provide start button
     keyboard = [[{'text': '/start'}]]
     start_keyboard = create_markup_keyboard(keyboard)
 
+    # create keyboard to provide get weather button
     keyboard = [[{'text': 'Get weather'}], [{'text': 'Stop'}]]
     weather_keyboard = create_markup_keyboard(keyboard)
 
+    # create keyboard to provide cities to choose from
     keyboard = [[{'text': city}] for city in cities]
     keyboard.append([{'text': 'Share location', 'request_location': True}])
     keyboard.append([{'text': 'Stop'}])
@@ -80,27 +83,31 @@ def process_message(bot, owm, cities, update, state):
         if message.sender and message.text and message.chat:
             text = message.text
 
-            if text == 'Get weather':
+            if text == 'Get weather':  # handle Get weather command
                 bot.send_message(chat_id, 'Please, choose a city', reply_markup=reply_keyboard).wait()
-            elif text in cities:
+            elif text in cities:  # handle city choice
                 observation = weather_mgr.weather_at_place(text)
 
                 msg = message_from_observation(observation)
 
+                # interact with user
                 bot.send_message(chat_id, msg)
                 time.sleep(0.1)
                 bot.send_message(chat_id, 'Please, select an option', reply_markup=reply_keyboard).wait()
-            elif text == 'Stop':
+            elif text == 'Stop':  # handle stop command
                 state['started'] = False
+                # interact with a user
                 bot.send_message(chat_id, 'Execution stopped', reply_markup=start_keyboard).wait()
             else:
+                # interact with a user
                 bot.send_message(chat_id, 'Please, select an option', reply_markup=reply_keyboard).wait()
-        elif message.location:
+        elif message.location:  # if location provided
             loc = message.location
             observation = weather_mgr.weather_at_coords(loc.latitude, loc.longitude)
 
             msg = message_from_observation(observation)
 
+            # interact with a user
             bot.send_message(chat_id, msg)
             bot.send_message(chat_id, 'Please, select an option', reply_markup=reply_keyboard).wait()
         else:
@@ -125,19 +132,22 @@ def main(TOKEN, OWM_KEY, cities):
         updates = bot.get_updates(offset=last_update_id).wait()
         try:
             for update in updates:
-                if update.update_id > last_update_id:
+                if update.update_id > last_update_id:  # if this is not an old update
+                    # handle update and move update id tracker
                     last_update_id = update.update_id
                     process_message(bot, owm, cities, update, state)
                     continue
             continue
-        except Exception:
+        except Exception:  # if anything goes wrong and execution raises an error
             print(traceback.format_exc())
             continue
 
 
 if __name__ == '__main__':
+    # your telegram bot and weather api tokens
     TOKEN = ''
     OWM_KEY = ''
 
+    # list of cities to choose from
     cities = ['London', 'Kazan', 'Moscow', 'Saint Petersburg', 'Hong Kong']
     main(TOKEN, OWM_KEY, cities)
